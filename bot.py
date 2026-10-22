@@ -24,7 +24,8 @@ from aiogram.types import (
     ReplyKeyboardRemove,
 )
 
-from bot_config import ADMIN_ID, TOKEN
+TOKEN = os.getenv("TOKEN", "")
+ADMIN_ID = int(os.getenv("ADMIN_ID", 0))
 
 logging.basicConfig(
     level=logging.INFO,
