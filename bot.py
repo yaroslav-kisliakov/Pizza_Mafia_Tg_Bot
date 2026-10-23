@@ -2,6 +2,7 @@ import asyncio
 import json
 import logging
 import os
+from aiohttp import web
 import re
 from collections import Counter
 from datetime import datetime, timedelta
@@ -2253,9 +2254,31 @@ async def health_check(bot: Bot):
         await asyncio.sleep(300)
 
 
+async def start_web_server():
+    """Мини-сервер, чтобы Render думал, что это сайт и не убивал бота."""
+    app = web.Application()
+
+    async def handle(request):
+        return web.Response(text="Bot is running!")
+
+    app.router.add_get("/", handle)
+    runner = web.AppRunner(app)
+    await runner.setup()
+
+    port = int(os.environ.get("PORT", 8080))
+    site = web.TCPSite(runner, "0.0.0.0", port)
+    await site.start()
+    logger.info(f"Веб-сервер запущен на порту {port}")
+
+
 async def main():
     await db_init()
+
+    # Запускаем веб-сервер в фоне
+    asyncio.create_task(start_web_server())
+
     bot = Bot(token=TOKEN)
+    ...
     try:
         await bot.set_my_commands(
             [
